@@ -42,12 +42,16 @@ async function loadWords() {
 
 // Initialize or reset the game
 function initializeGame() {
+    console.log('Initializing game...'); // Debug log
+    
     // Shuffle and take first 16 words
     gameWords = [...allWords].sort(() => Math.random() - 0.5).slice(0, 16);
     
     // Create a randomized order of indices (0-15)
     cardOrder = Array.from({ length: 16 }, (_, i) => i);
     shuffleArray(cardOrder);
+    
+    console.log('Card order:', cardOrder); // Debug log
     
     flippedCards = new Array(16).fill(false);
     currentTargetIndex = 0;
@@ -173,20 +177,41 @@ function renderGrid() {
         card.appendChild(cardFront);
         card.appendChild(cardBack);
         
-        card.addEventListener('click', () => handleCardClick(i));
+        // Add click event listener directly to the card
+        card.onclick = function(event) {
+            event.preventDefault();
+            const index = parseInt(this.dataset.index);
+            handleCardClick(index);
+        };
+        
         grid.appendChild(card);
     }
 }
 
 // Handle card clicks
 async function handleCardClick(index) {
-    if (flippedCards[index] || gameComplete) return;
+    console.log('Card clicked:', index); // Debug log
+    console.log('Current target index:', currentTargetIndex);
+    console.log('Expected card:', cardOrder[currentTargetIndex]);
+    console.log('Flipped status:', flippedCards[index]);
+    
+    if (flippedCards[index] || gameComplete) {
+        console.log('Card already flipped or game complete');
+        return;
+    }
 
     const messageEl = document.getElementById('message');
     const card = document.querySelector(`[data-index="${index}"]`);
+    
+    if (!card) {
+        console.error('Card element not found');
+        return;
+    }
 
     // Check if this is the current target card (based on randomized order)
     if (index === cardOrder[currentTargetIndex]) {
+        console.log('Correct answer!');
+        
         // Correct answer
         messageEl.textContent = 'Correct! 🎉';
         messageEl.className = 'message correct';
@@ -206,6 +231,7 @@ async function handleCardClick(index) {
         
         // Check if game is complete
         if (currentTargetIndex === 16) {
+            console.log('Game complete!');
             gameComplete = true;
             document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
             document.getElementById('playAgainBtn').classList.remove('hidden');
@@ -221,6 +247,8 @@ async function handleCardClick(index) {
         }
         
     } else {
+        console.log('Wrong answer!');
+        
         // Wrong answer
         messageEl.textContent = 'Try again! 🤔';
         messageEl.className = 'message wrong';
