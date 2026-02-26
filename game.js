@@ -90,6 +90,8 @@ function playSound(soundFile) {
     });
 }
 
+// [Previous code remains the same until the renderGrid function]
+
 // Render grid
 function renderGrid() {
     const grid = document.getElementById('gameGrid');
@@ -128,7 +130,10 @@ function renderGrid() {
             } else {
                 // Show the word of the next card in sequence
                 const nextCardIndex = cardOrder[flippedPosition + 1];
-                cardBack.textContent = gameWords[nextCardIndex].word;
+                const nextWord = gameWords[nextCardIndex].word;
+                cardBack.textContent = nextWord;
+                // Set data attribute for dynamic font sizing
+                cardBack.setAttribute('data-word-length', nextWord.length);
             }
         }
 
@@ -178,12 +183,14 @@ async function handleCardClick(index) {
             cardBack.innerHTML = ''; // Will show star after game complete
         } else {
             // The next card to find is the first in remainingIndices
-            // (which maintains the random order of remaining cards)
             const nextCardIndex = remainingIndices[0];
-            cardBack.textContent = gameWords[nextCardIndex].word;
+            const nextWord = gameWords[nextCardIndex].word;
+            cardBack.textContent = nextWord;
+            // Set data attribute for dynamic font sizing
+            cardBack.setAttribute('data-word-length', nextWord.length);
             
             // Update current target word
-            currentTargetWord = gameWords[nextCardIndex].word;
+            currentTargetWord = nextWord;
         }
         
         // Flip the card
@@ -210,13 +217,12 @@ async function handleCardClick(index) {
                     const lastCardBack = lastCard.querySelector('.card-back');
                     lastCardBack.innerHTML = '⭐';
                     lastCardBack.style.fontSize = '5em';
+                    lastCardBack.removeAttribute('data-word-length');
                 }
             }, 500);
         } else {
             // Update display with new target word
             updateDisplay();
-            console.log('Remaining indices:', remainingIndices);
-            console.log('Next target word:', currentTargetWord);
         }
         
     } else {

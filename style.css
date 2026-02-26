@@ -11,51 +11,50 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 5px;
 }
 
 .game-container {
-    max-width: 900px;
-    width: 100%;
+    max-width: 1200px;
+    width: 99%;
     background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 30px;
+    border-radius: 15px;
+    padding: 15px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 20px;
-    font-size: 2.5em;
+    margin-bottom: 10px;
+    font-size: 2em;
 }
 
 .game-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .current-word {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: white;
-    padding: 20px 40px;
-    border-radius: 15px;
-    font-size: 3em;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 2.5em;
     font-weight: bold;
-    letter-spacing: 2px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    letter-spacing: 1px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     display: inline-block;
-    min-width: 300px;
-    text-transform: uppercase;
-    margin-bottom: 20px;
+    min-width: 250px;
+    text-transform: lowercase;
 }
 
 .stats {
     display: flex;
     justify-content: space-between;
-    margin: 20px 0;
+    margin: 10px 0;
     color: #666;
-    font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 .progress {
@@ -66,20 +65,21 @@ h1 {
 .grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin: 30px 0;
+    gap: 0.5%;
+    margin: 10px 0;
 }
 
 .card {
     aspect-ratio: 1;
     cursor: pointer;
     position: relative;
-    transition: transform 0.6s;
+    transition: transform 0.4s;
     transform-style: preserve-3d;
 }
 
 .card.flipped {
     transform: rotateY(180deg);
+    pointer-events: none;
 }
 
 .card-front, .card-back {
@@ -87,58 +87,83 @@ h1 {
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
-    border-radius: 15px;
+    border-radius: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
 }
 
 .card-front {
     transform: rotateY(0deg);
     background: white;
-    border: 4px solid #667eea;
+    padding: 3px;
 }
 
 .card-front img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    border-radius: 10px;
+    border-radius: 5px;
 }
 
 .card-back {
     transform: rotateY(180deg);
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    border: 4px solid white;
+    border: 1px solid white;
     color: white;
-    font-size: 2em;
     font-weight: bold;
+    text-transform: lowercase;
+    padding: 2px;
+    
+    /* Text sizing and wrapping prevention */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    word-break: break-word;
-    text-transform: uppercase;
+    word-break: keep-all;
+    white-space: nowrap;
 }
+
+/* Dynamic font sizing for card back text */
+.card-back {
+    font-size: clamp(0.8rem, 5vw, 2rem);
+}
+
+/* Adjust font size based on word length - we'll let JavaScript handle this dynamically */
+.card-back[data-word-length="1"] { font-size: 2.5rem; }
+.card-back[data-word-length="2"] { font-size: 2.2rem; }
+.card-back[data-word-length="3"] { font-size: 2rem; }
+.card-back[data-word-length="4"] { font-size: 1.8rem; }
+.card-back[data-word-length="5"] { font-size: 1.6rem; }
+.card-back[data-word-length="6"] { font-size: 1.4rem; }
+.card-back[data-word-length="7"] { font-size: 1.2rem; }
+.card-back[data-word-length="8"] { font-size: 1rem; }
+.card-back[data-word-length="9"] { font-size: 0.9rem; }
+.card-back[data-word-length="10"] { font-size: 0.8rem; }
+.card-back[data-word-length="11"] { font-size: 0.7rem; }
+.card-back[data-word-length="12"] { font-size: 0.6rem; }
 
 .play-again-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    padding: 15px 40px;
-    font-size: 1.5em;
-    border-radius: 50px;
+    padding: 12px 30px;
+    font-size: 1.3em;
+    border-radius: 40px;
     cursor: pointer;
-    margin: 20px auto 0;
+    margin: 10px auto 0;
     display: block;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.2s, box-shadow 0.2s;
     font-weight: bold;
-    letter-spacing: 2px;
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    letter-spacing: 1px;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .play-again-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.6);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.6);
 }
 
 .play-again-btn.hidden {
@@ -147,9 +172,9 @@ h1 {
 
 .message {
     text-align: center;
-    font-size: 1.3em;
-    margin: 15px 0;
-    min-height: 40px;
+    font-size: 1.2em;
+    margin: 5px 0;
+    min-height: 30px;
     font-weight: bold;
 }
 
@@ -164,14 +189,14 @@ h1 {
 
 @keyframes pulse {
     0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
 
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 .card.shake {
@@ -187,24 +212,25 @@ h1 {
 /* Mobile responsiveness */
 @media (max-width: 600px) {
     .game-container {
-        padding: 15px;
+        padding: 8px;
     }
     
     h1 {
-        font-size: 1.8em;
+        font-size: 1.5em;
+        margin-bottom: 5px;
     }
     
     .current-word {
-        font-size: 2em;
-        min-width: 250px;
-        padding: 15px 20px;
+        font-size: 1.8em;
+        min-width: 200px;
+        padding: 8px 15px;
     }
     
     .grid {
-        gap: 10px;
+        gap: 0.3%;
     }
     
-    .card-back {
-        font-size: 1.5em;
+    .stats {
+        font-size: 1em;
     }
 }
