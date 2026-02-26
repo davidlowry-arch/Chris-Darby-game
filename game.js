@@ -7,7 +7,7 @@ let currentTargetIndex = 0;
 let currentTargetWord = null;
 let remainingIndices = [];
 let gameComplete = false;
-let firstWord = null; // Store the first word separately
+let firstWord = null;
 
 // Load JSON data
 async function loadWords() {
@@ -53,7 +53,7 @@ function initializeGame() {
     
     flippedCards = new Array(16).fill(false);
     currentTargetIndex = 0;
-    firstWord = gameWords[cardOrder[0]].word; // Store the first word
+    firstWord = gameWords[cardOrder[0]].word;
     currentTargetWord = firstWord;
     gameComplete = false;
     
@@ -61,7 +61,6 @@ function initializeGame() {
     renderGrid();
     
     document.getElementById('playAgainBtn').classList.add('hidden');
-    document.getElementById('message').textContent = '';
 }
 
 // Update display - always shows the first word
@@ -73,13 +72,12 @@ function updateDisplay() {
     }
 }
 
-// Play sound
+// Play sound with promise
 function playSound(soundFile) {
     return new Promise((resolve) => {
         const audio = new Audio(soundFile);
-        audio.play().then(() => {
-            audio.onended = resolve;
-        }).catch(error => {
+        audio.onended = resolve;
+        audio.play().catch(error => {
             console.error('Error playing sound:', error);
             resolve();
         });
@@ -147,16 +145,17 @@ function renderGrid() {
 async function handleCardClick(index) {
     if (flippedCards[index] || gameComplete) return;
 
-    const messageEl = document.getElementById('message');
     const card = document.querySelector(`[data-index="${index}"]`);
     const cardBack = card.querySelector('.card-back');
 
     if (gameWords[index].word === currentTargetWord) {
-        messageEl.textContent = 'Correct!';
-        messageEl.className = 'message correct';
-        
+        // Play ding first
         await playSound('audio/ding.mp3');
         
+        // Play the word audio second
+        await playSound(gameWords[index].audio);
+        
+        // Now flip the card (after both sounds have played)
         const posInRemaining = remainingIndices.indexOf(index);
         if (posInRemaining > -1) {
             remainingIndices.splice(posInRemaining, 1);
@@ -172,10 +171,9 @@ async function handleCardClick(index) {
             currentTargetWord = nextWord;
         }
         
+        // Flip the card
         flippedCards[index] = true;
         card.classList.add('flipped');
-        
-        await playSound(gameWords[index].audio);
         
         currentTargetIndex++;
         
@@ -184,6 +182,7 @@ async function handleCardClick(index) {
             document.getElementById('currentWord').textContent = '✓';
             document.getElementById('playAgainBtn').classList.remove('hidden');
             
+            // Update the last card to show a checkmark
             setTimeout(() => {
                 const lastCardIndex = cardOrder[15];
                 const lastCard = document.querySelector(`[data-index="${lastCardIndex}"]`);
@@ -197,15 +196,14 @@ async function handleCardClick(index) {
         }
         
     } else {
-        messageEl.textContent = 'Try again';
-        messageEl.className = 'message wrong';
-        
+        // Wrong answer - just play thud and shake, no message
         await playSound('audio/thud.mp3');
         
+        // Shake the card
         card.classList.add('shake');
         setTimeout(() => {
             card.classList.remove('shake');
-        }, 500);
+        }, 400);
     }
 }
 
