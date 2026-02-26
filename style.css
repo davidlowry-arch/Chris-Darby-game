@@ -80,7 +80,6 @@ h1 {
 
 .card.flipped {
     transform: rotateY(180deg);
-    pointer-events: none;
 }
 
 .card-front, .card-back {
@@ -177,13 +176,6 @@ h1 {
 
 .card.shake {
     animation: shake 0.5s;
-}
-
-.loading {
-    text-align: center;
-    font-size: 1.5em;
-    color: #666;
-    padding: 50px;
 }
 
 .error {

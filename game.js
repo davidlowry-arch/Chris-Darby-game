@@ -1,12 +1,11 @@
 // Game state
 let allWords = [];
 let gameWords = [];
-let cardOrder = []; // Will store the randomized order of indices
+let cardOrder = [];
 let flippedCards = [];
-let currentTargetWord = null;
 let currentTargetIndex = 0;
+let currentTargetWord = null;
 let gameComplete = false;
-let audioElements = {};
 
 // Load JSON data
 async function loadWords() {
@@ -19,8 +18,6 @@ async function loadWords() {
         
         if (Array.isArray(data)) {
             allWords = data;
-        } else if (data.words && Array.isArray(data.words)) {
-            allWords = data.words;
         } else {
             allWords = [data];
         }
@@ -29,99 +26,39 @@ async function loadWords() {
             throw new Error('No words found in JSON');
         }
         
-        // Initialize the game
         initializeGame();
         
     } catch (error) {
         console.error('Error loading words:', error);
         document.getElementById('currentWord').textContent = 'Error Loading Game';
-        document.getElementById('gameGrid').innerHTML = 
-            '<div class="error">Failed to load words.json. Make sure the file exists in the parent folder.</div>';
     }
 }
 
-// Initialize or reset the game
+// Initialize game
 function initializeGame() {
-    console.log('Initializing game...'); // Debug log
-    
-    // Shuffle and take first 16 words
+    // Take first 16 words and shuffle them
     gameWords = [...allWords].sort(() => Math.random() - 0.5).slice(0, 16);
     
-    // Create a randomized order of indices (0-15)
+    // Create random order for flipping cards
     cardOrder = Array.from({ length: 16 }, (_, i) => i);
-    shuffleArray(cardOrder);
-    
-    console.log('Card order:', cardOrder); // Debug log
+    for (let i = cardOrder.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cardOrder[i], cardOrder[j]] = [cardOrder[j], cardOrder[i]];
+    }
     
     flippedCards = new Array(16).fill(false);
     currentTargetIndex = 0;
     currentTargetWord = gameWords[cardOrder[0]];
     gameComplete = false;
     
-    // Pre-load audio elements
-    preloadAudio();
-    
     updateDisplay();
     renderGrid();
     
     document.getElementById('playAgainBtn').classList.add('hidden');
     document.getElementById('message').textContent = '';
-    document.getElementById('message').className = 'message';
 }
 
-// Shuffle array function
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-// Preload audio files
-function preloadAudio() {
-    // Add thud and ding sounds
-    audioElements['thud'] = new Audio('audio/thud.mp3');
-    audioElements['ding'] = new Audio('audio/ding.mp3');
-    
-    // Preload all word audio files
-    gameWords.forEach((word, index) => {
-        if (word.audio) {
-            const audio = new Audio(word.audio);
-            audio.load();
-            audioElements[`word_${index}`] = audio;
-        }
-    });
-}
-
-// Play sound function
-function playSound(soundName, index = null) {
-    return new Promise((resolve) => {
-        let audio;
-        
-        if (soundName === 'thud') {
-            audio = audioElements['thud'];
-        } else if (soundName === 'ding') {
-            audio = audioElements['ding'];
-        } else if (soundName === 'word' && index !== null) {
-            audio = audioElements[`word_${index}`];
-        }
-        
-        if (audio) {
-            audio.currentTime = 0;
-            audio.play().then(() => {
-                audio.onended = resolve;
-            }).catch(error => {
-                console.error('Error playing sound:', error);
-                resolve();
-            });
-        } else {
-            resolve();
-        }
-    });
-}
-
-// Update the current word display
+// Update display
 function updateDisplay() {
     if (gameComplete) {
         document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
@@ -131,7 +68,20 @@ function updateDisplay() {
     document.getElementById('wordsLearned').textContent = currentTargetIndex;
 }
 
-// Render the game grid
+// Play sound
+function playSound(soundFile) {
+    return new Promise((resolve) => {
+        const audio = new Audio(soundFile);
+        audio.play().then(() => {
+            audio.onended = resolve;
+        }).catch(error => {
+            console.error('Error playing sound:', error);
+            resolve();
+        });
+    });
+}
+
+// Render grid
 function renderGrid() {
     const grid = document.getElementById('gameGrid');
     grid.innerHTML = '';
@@ -139,37 +89,30 @@ function renderGrid() {
     for (let i = 0; i < 16; i++) {
         const card = document.createElement('div');
         card.className = `card ${flippedCards[i] ? 'flipped' : ''}`;
-        card.dataset.index = i;
+        card.setAttribute('data-index', i);
 
-        // Front of card (shows image)
+        // Front side (image)
         const cardFront = document.createElement('div');
         cardFront.className = 'card-front';
-        
         const img = document.createElement('img');
         img.src = gameWords[i].image;
         img.alt = gameWords[i].word;
         img.onerror = () => {
-            // Fallback if image doesn't load
             img.style.display = 'none';
-            const fallback = document.createElement('div');
-            fallback.style.cssText = 'width:100%;height:100%;display:flex;justify-content:center;align-items:center;';
-            fallback.textContent = '📷';
-            fallback.style.fontSize = '3em';
-            cardFront.appendChild(fallback);
+            cardFront.innerHTML = '📷';
+            cardFront.style.fontSize = '3em';
         };
         cardFront.appendChild(img);
 
-        // Back of card (shows word or star)
+        // Back side (word or star)
         const cardBack = document.createElement('div');
         cardBack.className = 'card-back';
-
+        
         if (flippedCards[i]) {
             if (i === cardOrder[15] && gameComplete) {
-                // Last card shows star
                 cardBack.innerHTML = '⭐';
                 cardBack.style.fontSize = '5em';
             } else {
-                // Show the word on the back
                 cardBack.textContent = gameWords[i].word;
             }
         }
@@ -177,86 +120,80 @@ function renderGrid() {
         card.appendChild(cardFront);
         card.appendChild(cardBack);
         
-        // Add click event listener directly to the card
-        card.onclick = function(event) {
-            event.preventDefault();
-            const index = parseInt(this.dataset.index);
-            handleCardClick(index);
-        };
+        // Add click handler
+        card.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const idx = parseInt(this.getAttribute('data-index'));
+            handleCardClick(idx);
+        });
         
         grid.appendChild(card);
     }
 }
 
-// Handle card clicks
+// Handle card click
 async function handleCardClick(index) {
-    console.log('Card clicked:', index); // Debug log
-    console.log('Current target index:', currentTargetIndex);
-    console.log('Expected card:', cardOrder[currentTargetIndex]);
-    console.log('Flipped status:', flippedCards[index]);
-    
+    // Check if card is already flipped or game is complete
     if (flippedCards[index] || gameComplete) {
-        console.log('Card already flipped or game complete');
         return;
     }
 
     const messageEl = document.getElementById('message');
     const card = document.querySelector(`[data-index="${index}"]`);
-    
-    if (!card) {
-        console.error('Card element not found');
-        return;
-    }
 
-    // Check if this is the current target card (based on randomized order)
+    // Check if this is the correct card
     if (index === cardOrder[currentTargetIndex]) {
-        console.log('Correct answer!');
-        
-        // Correct answer
+        // Correct!
         messageEl.textContent = 'Correct! 🎉';
         messageEl.className = 'message correct';
         
         // Play ding sound
-        await playSound('ding');
+        await playSound('audio/ding.mp3');
         
         // Flip the card
         flippedCards[index] = true;
         card.classList.add('flipped');
         
+        // Update card back content
+        const cardBack = card.querySelector('.card-back');
+        cardBack.textContent = gameWords[index].word;
+        
         // Play word audio
-        await playSound('word', index);
+        await playSound(gameWords[index].audio);
         
         // Move to next target
         currentTargetIndex++;
         
         // Check if game is complete
         if (currentTargetIndex === 16) {
-            console.log('Game complete!');
             gameComplete = true;
             document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
             document.getElementById('playAgainBtn').classList.remove('hidden');
             
-            // Re-render to show star on last card
+            // Update last card to show star
             setTimeout(() => {
-                renderGrid();
+                const lastCard = document.querySelector(`[data-index="${cardOrder[15]}"]`);
+                if (lastCard) {
+                    const lastCardBack = lastCard.querySelector('.card-back');
+                    lastCardBack.innerHTML = '⭐';
+                    lastCardBack.style.fontSize = '5em';
+                }
             }, 500);
         } else {
-            // Update current target word
+            // Update next target word
             currentTargetWord = gameWords[cardOrder[currentTargetIndex]];
             updateDisplay();
         }
         
     } else {
-        console.log('Wrong answer!');
-        
-        // Wrong answer
+        // Wrong!
         messageEl.textContent = 'Try again! 🤔';
         messageEl.className = 'message wrong';
         
         // Play thud sound
-        await playSound('thud');
+        await playSound('audio/thud.mp3');
         
-        // Shake the card
+        // Shake animation
         card.classList.add('shake');
         setTimeout(() => {
             card.classList.remove('shake');
@@ -264,17 +201,10 @@ async function handleCardClick(index) {
     }
 }
 
-// Play again button handler
+// Play again button
 document.getElementById('playAgainBtn').addEventListener('click', () => {
     initializeGame();
 });
 
 // Start the game
 loadWords();
-
-// Add touch support for mobile
-document.addEventListener('touchstart', (e) => {
-    if (e.target.closest('.card')) {
-        e.preventDefault();
-    }
-}, { passive: false });
