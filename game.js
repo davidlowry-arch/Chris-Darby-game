@@ -4,7 +4,6 @@ let gameWords = [];
 let cardOrder = [];
 let flippedCards = [];
 let currentTargetIndex = 0;
-let currentTargetWord = null;
 let gameComplete = false;
 
 // Load JSON data
@@ -48,7 +47,6 @@ function initializeGame() {
     
     flippedCards = new Array(16).fill(false);
     currentTargetIndex = 0;
-    currentTargetWord = gameWords[cardOrder[0]];
     gameComplete = false;
     
     updateDisplay();
@@ -58,12 +56,16 @@ function initializeGame() {
     document.getElementById('message').textContent = '';
 }
 
-// Update display
+// Update display - ONLY shows the first word
 function updateDisplay() {
     if (gameComplete) {
         document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
-    } else if (currentTargetWord) {
-        document.getElementById('currentWord').textContent = currentTargetWord.word;
+    } else if (currentTargetIndex === 0) {
+        // Only show the first word at the top
+        document.getElementById('currentWord').textContent = gameWords[cardOrder[0]].word;
+    } else {
+        // After first card, the top becomes empty or shows a prompt
+        document.getElementById('currentWord').textContent = 'Find the next image...';
     }
     document.getElementById('wordsLearned').textContent = currentTargetIndex;
 }
@@ -104,10 +106,11 @@ function renderGrid() {
         };
         cardFront.appendChild(img);
 
-        // Back side (word or star)
+        // Back side (word or star) - initially empty until flipped
         const cardBack = document.createElement('div');
         cardBack.className = 'card-back';
         
+        // If card is already flipped (from previous game), show its content
         if (flippedCards[i]) {
             if (i === cardOrder[15] && gameComplete) {
                 cardBack.innerHTML = '⭐';
@@ -140,8 +143,9 @@ async function handleCardClick(index) {
 
     const messageEl = document.getElementById('message');
     const card = document.querySelector(`[data-index="${index}"]`);
+    const cardBack = card.querySelector('.card-back');
 
-    // Check if this is the correct card
+    // Check if this is the correct card (in the random order)
     if (index === cardOrder[currentTargetIndex]) {
         // Correct!
         messageEl.textContent = 'Correct! 🎉';
@@ -154,9 +158,14 @@ async function handleCardClick(index) {
         flippedCards[index] = true;
         card.classList.add('flipped');
         
-        // Update card back content
-        const cardBack = card.querySelector('.card-back');
-        cardBack.textContent = gameWords[index].word;
+        // Show the word on the back of THIS card
+        if (currentTargetIndex === 15) {
+            // Last card will show star after game complete
+            cardBack.innerHTML = ''; // Clear first
+        } else {
+            // Show the word on the back of this card
+            cardBack.textContent = gameWords[index].word;
+        }
         
         // Play word audio
         await playSound(gameWords[index].audio);
@@ -170,9 +179,10 @@ async function handleCardClick(index) {
             document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
             document.getElementById('playAgainBtn').classList.remove('hidden');
             
-            // Update last card to show star
+            // Update the last card to show a star
             setTimeout(() => {
-                const lastCard = document.querySelector(`[data-index="${cardOrder[15]}"]`);
+                const lastCardIndex = cardOrder[15];
+                const lastCard = document.querySelector(`[data-index="${lastCardIndex}"]`);
                 if (lastCard) {
                     const lastCardBack = lastCard.querySelector('.card-back');
                     lastCardBack.innerHTML = '⭐';
@@ -180,8 +190,7 @@ async function handleCardClick(index) {
                 }
             }, 500);
         } else {
-            // Update next target word
-            currentTargetWord = gameWords[cardOrder[currentTargetIndex]];
+            // Update display (which now shows "Find the next image..." or similar)
             updateDisplay();
         }
         
