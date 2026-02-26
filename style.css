@@ -1,0 +1,215 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.game-container {
+    max-width: 900px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+}
+
+.game-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.current-word {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 3em;
+    font-weight: bold;
+    letter-spacing: 2px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    min-width: 300px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    color: #666;
+    font-size: 1.2em;
+}
+
+.progress {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.card {
+    aspect-ratio: 1;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.card.flipped {
+    transform: rotateY(180deg);
+    pointer-events: none;
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-front {
+    transform: rotateY(0deg);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 2.5em;
+    font-weight: bold;
+    border: 4px solid white;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    background: white;
+    border: 4px solid #667eea;
+    padding: 10px;
+}
+
+.card-back img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.play-again-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.5em;
+    border-radius: 50px;
+    cursor: pointer;
+    margin: 20px auto 0;
+    display: block;
+    transition: transform 0.3s, box-shadow 0.3s;
+    font-weight: bold;
+    letter-spacing: 2px;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.play-again-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.6);
+}
+
+.play-again-btn.hidden {
+    display: none;
+}
+
+.message {
+    text-align: center;
+    font-size: 1.3em;
+    margin: 15px 0;
+    min-height: 40px;
+    font-weight: bold;
+}
+
+.message.correct {
+    color: #4CAF50;
+    animation: pulse 0.5s;
+}
+
+.message.wrong {
+    color: #f44336;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.card.shake {
+    animation: shake 0.5s;
+}
+
+.loading {
+    text-align: center;
+    font-size: 1.5em;
+    color: #666;
+    padding: 50px;
+}
+
+.error {
+    color: #f44336;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .game-container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8em;
+    }
+    
+    .current-word {
+        font-size: 2em;
+        min-width: 250px;
+        padding: 15px 20px;
+    }
+    
+    .grid {
+        gap: 10px;
+    }
+    
+    .card-front {
+        font-size: 1.8em;
+    }
+}
