@@ -28,11 +28,11 @@ body {
 }
 
 .target-word {
-    width: min(15vw, 100px);
-    height: min(15vw, 100px);
+    width: 30%;
+    aspect-ratio: 1;
     background: #4CAF50;
     color: white;
-    font-size: clamp(1rem, 5vw, 2.5rem);
+    font-size: clamp(1.5rem, 8vw, 3.5rem);
     font-weight: bold;
     text-transform: lowercase;
     display: flex;
@@ -65,6 +65,13 @@ body {
     pointer-events: none;
 }
 
+/* Highlight for just-flipped cards */
+.card.just-flipped {
+    outline: 3px solid #333;
+    outline-offset: 2px;
+    z-index: 10;
+}
+
 .card-front, .card-back {
     position: absolute;
     width: 100%;
@@ -81,7 +88,7 @@ body {
 
 .card-front {
     transform: rotateY(0deg);
-    padding: 3px;
+    padding: 2px;
 }
 
 .card-front img {
@@ -97,7 +104,7 @@ body {
     color: white;
     font-weight: bold;
     text-transform: lowercase;
-    padding: 3px;
+    padding: 0; /* Remove padding to maximize text space */
     
     /* Text sizing and wrapping prevention */
     display: flex;
@@ -108,23 +115,23 @@ body {
     white-space: nowrap;
 }
 
-/* Dynamic font sizing for card back text */
+/* Dynamic font sizing for card back text - increased sizes */
 .card-back {
-    font-size: clamp(0.7rem, 4vw, 2rem);
+    font-size: clamp(1rem, 5vw, 2.5rem);
 }
 
-.card-back[data-word-length="1"] { font-size: clamp(1.2rem, 6vw, 2.5rem); }
-.card-back[data-word-length="2"] { font-size: clamp(1.1rem, 5.5vw, 2.2rem); }
-.card-back[data-word-length="3"] { font-size: clamp(1rem, 5vw, 2rem); }
-.card-back[data-word-length="4"] { font-size: clamp(0.9rem, 4.5vw, 1.8rem); }
-.card-back[data-word-length="5"] { font-size: clamp(0.85rem, 4vw, 1.6rem); }
-.card-back[data-word-length="6"] { font-size: clamp(0.8rem, 3.8vw, 1.4rem); }
-.card-back[data-word-length="7"] { font-size: clamp(0.75rem, 3.5vw, 1.3rem); }
-.card-back[data-word-length="8"] { font-size: clamp(0.7rem, 3.2vw, 1.2rem); }
-.card-back[data-word-length="9"] { font-size: clamp(0.65rem, 3vw, 1.1rem); }
-.card-back[data-word-length="10"] { font-size: clamp(0.6rem, 2.8vw, 1rem); }
-.card-back[data-word-length="11"] { font-size: clamp(0.55rem, 2.6vw, 0.9rem); }
-.card-back[data-word-length="12"] { font-size: clamp(0.5rem, 2.4vw, 0.8rem); }
+.card-back[data-word-length="1"] { font-size: clamp(2rem, 8vw, 3.5rem); }
+.card-back[data-word-length="2"] { font-size: clamp(1.8rem, 7.5vw, 3.2rem); }
+.card-back[data-word-length="3"] { font-size: clamp(1.6rem, 7vw, 3rem); }
+.card-back[data-word-length="4"] { font-size: clamp(1.4rem, 6.5vw, 2.8rem); }
+.card-back[data-word-length="5"] { font-size: clamp(1.3rem, 6vw, 2.6rem); }
+.card-back[data-word-length="6"] { font-size: clamp(1.2rem, 5.5vw, 2.4rem); }
+.card-back[data-word-length="7"] { font-size: clamp(1.1rem, 5vw, 2.2rem); }
+.card-back[data-word-length="8"] { font-size: clamp(1rem, 4.8vw, 2rem); }
+.card-back[data-word-length="9"] { font-size: clamp(0.95rem, 4.5vw, 1.9rem); }
+.card-back[data-word-length="10"] { font-size: clamp(0.9rem, 4.2vw, 1.8rem); }
+.card-back[data-word-length="11"] { font-size: clamp(0.85rem, 4vw, 1.7rem); }
+.card-back[data-word-length="12"] { font-size: clamp(0.8rem, 3.8vw, 1.6rem); }
 
 .play-again-btn {
     background: #4CAF50;
@@ -149,7 +156,6 @@ body {
     display: none;
 }
 
-/* Remove message styles since we're not using them anymore */
 .message {
     display: none;
 }
@@ -185,8 +191,7 @@ body {
     }
     
     .target-word {
-        width: min(20vw, 80px);
-        height: min(20vw, 80px);
+        width: 40%; /* Slightly larger on mobile */
     }
     
     .grid {
@@ -197,5 +202,11 @@ body {
         padding: 8px 20px;
         font-size: 1rem;
         margin: 20px auto 5px;
+    }
+    
+    /* Highlight for just-flipped cards - slightly thinner on mobile */
+    .card.just-flipped {
+        outline: 2px solid #333;
+        outline-offset: 1px;
     }
 }

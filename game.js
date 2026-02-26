@@ -63,13 +63,9 @@ function initializeGame() {
     document.getElementById('playAgainBtn').classList.add('hidden');
 }
 
-// Update display - always shows the first word
+// Update display - always shows the first word (never changes to tick)
 function updateDisplay() {
-    if (gameComplete) {
-        document.getElementById('currentWord').textContent = '✓';
-    } else {
-        document.getElementById('currentWord').textContent = firstWord;
-    }
+    document.getElementById('currentWord').textContent = firstWord;
 }
 
 // Play sound with promise
@@ -141,6 +137,13 @@ function renderGrid() {
     }
 }
 
+// Remove highlight from all cards
+function removeAllHighlights() {
+    document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('just-flipped');
+    });
+}
+
 // Handle card click
 async function handleCardClick(index) {
     if (flippedCards[index] || gameComplete) return;
@@ -154,6 +157,9 @@ async function handleCardClick(index) {
         
         // Play the word audio second
         await playSound(gameWords[index].audio);
+        
+        // Remove any existing highlights
+        removeAllHighlights();
         
         // Now flip the card (after both sounds have played)
         const posInRemaining = remainingIndices.indexOf(index);
@@ -175,11 +181,15 @@ async function handleCardClick(index) {
         flippedCards[index] = true;
         card.classList.add('flipped');
         
+        // Add highlight to this card (will be visible on the back)
+        setTimeout(() => {
+            card.classList.add('just-flipped');
+        }, 50);
+        
         currentTargetIndex++;
         
         if (currentTargetIndex === 16) {
             gameComplete = true;
-            document.getElementById('currentWord').textContent = '✓';
             document.getElementById('playAgainBtn').classList.remove('hidden');
             
             // Update the last card to show a checkmark
@@ -196,7 +206,7 @@ async function handleCardClick(index) {
         }
         
     } else {
-        // Wrong answer - just play thud and shake, no message
+        // Wrong answer - just play thud and shake
         await playSound('audio/thud.mp3');
         
         // Shake the card
