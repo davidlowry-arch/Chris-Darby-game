@@ -1,12 +1,13 @@
 // Game state
 let allWords = [];
 let gameWords = [];
-let cardOrder = []; // The sequence in which cards should be flipped
+let cardOrder = [];
 let flippedCards = [];
 let currentTargetIndex = 0;
 let currentTargetWord = null;
-let remainingIndices = []; // Indices of cards not yet flipped
+let remainingIndices = [];
 let gameComplete = false;
+let firstWord = null; // Store the first word separately
 
 // Load JSON data
 async function loadWords() {
@@ -31,7 +32,7 @@ async function loadWords() {
         
     } catch (error) {
         console.error('Error loading words:', error);
-        document.getElementById('currentWord').textContent = 'Error Loading Game';
+        document.getElementById('currentWord').textContent = '?';
     }
 }
 
@@ -52,13 +53,9 @@ function initializeGame() {
     
     flippedCards = new Array(16).fill(false);
     currentTargetIndex = 0;
-    currentTargetWord = gameWords[cardOrder[0]].word;
+    firstWord = gameWords[cardOrder[0]].word; // Store the first word
+    currentTargetWord = firstWord;
     gameComplete = false;
-    
-    console.log('Game initialized:');
-    console.log('Card order (indices):', cardOrder);
-    console.log('Words in order:', cardOrder.map(i => gameWords[i].word));
-    console.log('Remaining indices:', remainingIndices);
     
     updateDisplay();
     renderGrid();
@@ -67,14 +64,13 @@ function initializeGame() {
     document.getElementById('message').textContent = '';
 }
 
-// Update display
+// Update display - always shows the first word
 function updateDisplay() {
     if (gameComplete) {
-        document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
+        document.getElementById('currentWord').textContent = '✓';
     } else {
-        document.getElementById('currentWord').textContent = currentTargetWord;
+        document.getElementById('currentWord').textContent = firstWord;
     }
-    document.getElementById('wordsLearned').textContent = currentTargetIndex;
 }
 
 // Play sound
@@ -89,8 +85,6 @@ function playSound(soundFile) {
         });
     });
 }
-
-// [Previous code remains the same until the renderGrid function]
 
 // Render grid
 function renderGrid() {
@@ -111,7 +105,7 @@ function renderGrid() {
         img.onerror = () => {
             img.style.display = 'none';
             cardFront.innerHTML = '📷';
-            cardFront.style.fontSize = '3em';
+            cardFront.style.fontSize = '2em';
         };
         cardFront.appendChild(img);
 
@@ -121,18 +115,17 @@ function renderGrid() {
         
         // If card is already flipped, show the appropriate content
         if (flippedCards[i]) {
-            const flippedPosition = cardOrder.indexOf(i); // What position in sequence this card was flipped
+            const flippedPosition = cardOrder.indexOf(i);
             
             if (flippedPosition === 15) {
-                // Last card shows star
-                cardBack.innerHTML = '⭐';
-                cardBack.style.fontSize = '5em';
+                // Last card shows checkmark
+                cardBack.innerHTML = '✓';
+                cardBack.style.fontSize = '3em';
             } else {
                 // Show the word of the next card in sequence
                 const nextCardIndex = cardOrder[flippedPosition + 1];
                 const nextWord = gameWords[nextCardIndex].word;
                 cardBack.textContent = nextWord;
-                // Set data attribute for dynamic font sizing
                 cardBack.setAttribute('data-word-length', nextWord.length);
             }
         }
@@ -140,7 +133,6 @@ function renderGrid() {
         card.appendChild(cardFront);
         card.appendChild(cardBack);
         
-        // Add click handler
         card.addEventListener('click', function(e) {
             e.stopPropagation();
             const idx = parseInt(this.getAttribute('data-index'));
@@ -153,87 +145,63 @@ function renderGrid() {
 
 // Handle card click
 async function handleCardClick(index) {
-    // Check if card is already flipped or game is complete
-    if (flippedCards[index] || gameComplete) {
-        return;
-    }
+    if (flippedCards[index] || gameComplete) return;
 
     const messageEl = document.getElementById('message');
     const card = document.querySelector(`[data-index="${index}"]`);
     const cardBack = card.querySelector('.card-back');
 
-    // Check if this card's word matches the current target
     if (gameWords[index].word === currentTargetWord) {
-        // Correct!
-        messageEl.textContent = 'Correct! 🎉';
+        messageEl.textContent = 'Correct!';
         messageEl.className = 'message correct';
         
-        // Play ding sound
         await playSound('audio/ding.mp3');
         
-        // Remove this index from remaining indices
         const posInRemaining = remainingIndices.indexOf(index);
         if (posInRemaining > -1) {
             remainingIndices.splice(posInRemaining, 1);
         }
         
-        // Determine what to show on the back of THIS card
         if (currentTargetIndex === 15) {
-            // This is the last card
-            cardBack.innerHTML = ''; // Will show star after game complete
+            cardBack.innerHTML = '';
         } else {
-            // The next card to find is the first in remainingIndices
             const nextCardIndex = remainingIndices[0];
             const nextWord = gameWords[nextCardIndex].word;
             cardBack.textContent = nextWord;
-            // Set data attribute for dynamic font sizing
             cardBack.setAttribute('data-word-length', nextWord.length);
-            
-            // Update current target word
             currentTargetWord = nextWord;
         }
         
-        // Flip the card
         flippedCards[index] = true;
         card.classList.add('flipped');
         
-        // Play the audio for this card's word
         await playSound(gameWords[index].audio);
         
-        // Move to next target
         currentTargetIndex++;
         
-        // Check if game is complete
         if (currentTargetIndex === 16) {
             gameComplete = true;
-            document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
+            document.getElementById('currentWord').textContent = '✓';
             document.getElementById('playAgainBtn').classList.remove('hidden');
             
-            // Update the last card to show a star
             setTimeout(() => {
                 const lastCardIndex = cardOrder[15];
                 const lastCard = document.querySelector(`[data-index="${lastCardIndex}"]`);
                 if (lastCard) {
                     const lastCardBack = lastCard.querySelector('.card-back');
-                    lastCardBack.innerHTML = '⭐';
-                    lastCardBack.style.fontSize = '5em';
+                    lastCardBack.innerHTML = '✓';
+                    lastCardBack.style.fontSize = '3em';
                     lastCardBack.removeAttribute('data-word-length');
                 }
             }, 500);
-        } else {
-            // Update display with new target word
-            updateDisplay();
         }
         
     } else {
-        // Wrong!
-        messageEl.textContent = 'Try again! 🤔';
+        messageEl.textContent = 'Try again';
         messageEl.className = 'message wrong';
         
-        // Play thud sound
         await playSound('audio/thud.mp3');
         
-        // Shake animation
         card.classList.add('shake');
         setTimeout(() => {
             card.classList.remove('shake');

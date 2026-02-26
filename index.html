@@ -3,25 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolof Literacy Game</title>
+    <title>Wolof Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
-        <h1>Wolof Literacy Game</h1>
-        
-        <div class="game-header">
-            <div class="current-word" id="currentWord">Loading...</div>
+        <div class="target-word-container">
+            <div class="target-word" id="currentWord">Loading...</div>
         </div>
         
-        <div class="stats">
-            <span>Progress: <span class="progress" id="wordsLearned">0</span>/16</span>
-            <div id="message" class="message"></div>
-        </div>
+        <div id="message" class="message"></div>
 
         <div id="gameGrid" class="grid"></div>
 
-        <button id="playAgainBtn" class="play-again-btn hidden">Play Again!</button>
+        <button id="playAgainBtn" class="play-again-btn hidden">Play Again</button>
     </div>
 
     <script src="game.js"></script>
