@@ -1,9 +1,11 @@
 // Game state
 let allWords = [];
 let gameWords = [];
-let cardOrder = [];
+let cardOrder = []; // The sequence in which cards should be flipped
 let flippedCards = [];
 let currentTargetIndex = 0;
+let currentTargetWord = null; // The word we're currently looking for
+let nextWordIndex = 1; // Index in cardOrder of the next word to reveal
 let gameComplete = false;
 
 // Load JSON data
@@ -45,8 +47,13 @@ function initializeGame() {
         [cardOrder[i], cardOrder[j]] = [cardOrder[j], cardOrder[i]];
     }
     
+    console.log('Card order (indices):', cardOrder);
+    console.log('Words in order:', cardOrder.map(i => gameWords[i].word));
+    
     flippedCards = new Array(16).fill(false);
     currentTargetIndex = 0;
+    currentTargetWord = gameWords[cardOrder[0]].word; // First word to find
+    nextWordIndex = 1;
     gameComplete = false;
     
     updateDisplay();
@@ -56,16 +63,12 @@ function initializeGame() {
     document.getElementById('message').textContent = '';
 }
 
-// Update display - ONLY shows the first word
+// Update display
 function updateDisplay() {
     if (gameComplete) {
         document.getElementById('currentWord').textContent = '🎉 Game Complete! 🎉';
-    } else if (currentTargetIndex === 0) {
-        // Only show the first word at the top
-        document.getElementById('currentWord').textContent = gameWords[cardOrder[0]].word;
     } else {
-        // After first card, the top becomes empty or shows a prompt
-        document.getElementById('currentWord').textContent = 'Find the next image...';
+        document.getElementById('currentWord').textContent = currentTargetWord;
     }
     document.getElementById('wordsLearned').textContent = currentTargetIndex;
 }
@@ -106,17 +109,22 @@ function renderGrid() {
         };
         cardFront.appendChild(img);
 
-        // Back side (word or star) - initially empty until flipped
+        // Back side - initially empty, will show NEXT word when flipped
         const cardBack = document.createElement('div');
         cardBack.className = 'card-back';
         
-        // If card is already flipped (from previous game), show its content
+        // If card is already flipped (from previous game), show appropriate content
         if (flippedCards[i]) {
+            const flippedIndex = cardOrder.indexOf(i); // What position in sequence this card was flipped
+            
             if (i === cardOrder[15] && gameComplete) {
+                // Last card shows star
                 cardBack.innerHTML = '⭐';
                 cardBack.style.fontSize = '5em';
-            } else {
-                cardBack.textContent = gameWords[i].word;
+            } else if (flippedIndex < 15) {
+                // Show the NEXT word in sequence on the back of this card
+                const nextWordIndex = cardOrder[flippedIndex + 1];
+                cardBack.textContent = gameWords[nextWordIndex].word;
             }
         }
 
@@ -145,8 +153,8 @@ async function handleCardClick(index) {
     const card = document.querySelector(`[data-index="${index}"]`);
     const cardBack = card.querySelector('.card-back');
 
-    // Check if this is the correct card (in the random order)
-    if (index === cardOrder[currentTargetIndex]) {
+    // Check if this is the correct card (matches current target word)
+    if (gameWords[index].word === currentTargetWord) {
         // Correct!
         messageEl.textContent = 'Correct! 🎉';
         messageEl.className = 'message correct';
@@ -154,24 +162,29 @@ async function handleCardClick(index) {
         // Play ding sound
         await playSound('audio/ding.mp3');
         
+        // Determine what to show on the back of THIS card
+        if (currentTargetIndex === 15) {
+            // This is the last card - will show star after game complete
+            cardBack.innerHTML = ''; // Clear for now
+        } else {
+            // Show the NEXT word to find on the back of this card
+            const nextWordCardIndex = cardOrder[nextWordIndex];
+            cardBack.textContent = gameWords[nextWordIndex].word;
+            
+            // Update the current target word to the next one
+            currentTargetWord = gameWords[nextWordIndex].word;
+        }
+        
         // Flip the card
         flippedCards[index] = true;
         card.classList.add('flipped');
         
-        // Show the word on the back of THIS card
-        if (currentTargetIndex === 15) {
-            // Last card will show star after game complete
-            cardBack.innerHTML = ''; // Clear first
-        } else {
-            // Show the word on the back of this card
-            cardBack.textContent = gameWords[index].word;
-        }
-        
-        // Play word audio
+        // Play the audio for this card's word
         await playSound(gameWords[index].audio);
         
         // Move to next target
         currentTargetIndex++;
+        nextWordIndex++;
         
         // Check if game is complete
         if (currentTargetIndex === 16) {
@@ -190,7 +203,7 @@ async function handleCardClick(index) {
                 }
             }, 500);
         } else {
-            // Update display (which now shows "Find the next image..." or similar)
+            // Update display with new target word
             updateDisplay();
         }
         
